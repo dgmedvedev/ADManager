@@ -1,4 +1,4 @@
-package com.medvedev.app.presentation
+package com.medvedev.presentation
 
 import javax.swing.SwingUtilities
 

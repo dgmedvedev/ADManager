@@ -1,4 +1,4 @@
-package com.medvedev.app.presentation
+package com.medvedev.presentation
 
 import com.medvedev.domain.model.Admin
 import com.medvedev.domain.usecase.AuthorizationUseCase

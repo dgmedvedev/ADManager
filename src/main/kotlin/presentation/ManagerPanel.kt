@@ -1,6 +1,7 @@
-package com.medvedev.app.presentation
+package com.medvedev.presentation
 
-import com.medvedev.app.presentation.ManagerState.*
+import com.medvedev.factory.ViewModelFactory
+import com.medvedev.presentation.ManagerState.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -72,9 +73,9 @@ class ManagerPanel() : JPanel() {
 
         addTopInset(35)
 
-        addTaskPanelByUsername(TASK_1)
-        addTaskPanelByUsername(TASK_2)
-        addTaskPanelByUsername(TASK_3)
+        addTaskPanelWithTextField(TASK_1, HINT_ENTER_USERNAME)
+        addTaskPanelWithTextField(TASK_2, HINT_ENTER_USERNAME)
+        addTaskPanelWithTextField(TASK_3, HINT_ENTER_USERNAME)
         addTaskPanel(TASK_4)
 
         gbc.gridy++
@@ -82,7 +83,7 @@ class ManagerPanel() : JPanel() {
         add(Box.createVerticalGlue(), gbc)
     }
 
-    private fun addTaskPanelByUsername(task: String) {
+    private fun addTaskPanelWithTextField(task: String, hint: String) {
         val checkBox = JCheckBox().apply {
             icon = resizeIcon(ImageIcon(imageOfUnselectedCheckbox))
             selectedIcon = resizeIcon(ImageIcon(imageOfSelectedCheckbox))
@@ -108,7 +109,9 @@ class ManagerPanel() : JPanel() {
             font = Font(FONT_ARIAL, Font.PLAIN, MEDIUM_FONT)
         }
 
-        val usernameField = JTextField(COLUMNS).apply {
+        val textField = JTextField(COLUMNS).apply {
+            text = hint
+//            foreground = Col
             preferredSize = Dimension(0, TEXT_FIELD_HEIGHT)
             font = Font(FONT_ARIAL, Font.PLAIN, MEDIUM_FONT)
             isVisible = false
@@ -137,18 +140,18 @@ class ManagerPanel() : JPanel() {
 
         gbc.gridx--
         gbc.gridy++
-        add(usernameField, gbc)
+        add(textField, gbc)
 
         gbc.gridx++
         gbc.insets = Insets(0, INSET_OF_BUTTON, 0, 0) // Добавляем отступ Button
         add(executeButton, gbc)
 
         checkBox.addActionListener {
-            usernameField.isVisible = checkBox.isSelected
+            textField.isVisible = checkBox.isSelected
             executeButton.isVisible = checkBox.isSelected
         }
 
-        executeButton.addActionListener(createButtonListener(usernameField, count++))
+        executeButton.addActionListener(createButtonListener(textField, count++))
     }
 
     private fun addTaskPanel(task: String) {
@@ -258,6 +261,8 @@ class ManagerPanel() : JPanel() {
 
         private const val MESSAGE_TITLE_AD = "Доменные службы Active Directory"
         private const val MESSAGE_TITLE_ERROR = "Ошибка!"
+
+        private const val HINT_ENTER_USERNAME = "Введите имя пользователя"
 
         private const val TASK_1 = "1. Разблокировать учетную запись"
         private const val TASK_2 = "2. Отключить учетную запись"

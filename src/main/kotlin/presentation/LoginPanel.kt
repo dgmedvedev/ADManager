@@ -1,10 +1,13 @@
-package com.medvedev.app.presentation
+package com.medvedev.presentation
 
+import com.medvedev.factory.ViewModelFactory
 import java.awt.*
+import java.util.ResourceBundle
 import javax.imageio.ImageIO
 import javax.swing.*
 
-class LoginPanel(private val adminLoginSuccessListener: (() -> Unit)?) : JPanel() {
+class LoginPanel(private val constants: ResourceBundle, private val adminLoginSuccessListener: (() -> Unit)?) :
+    JPanel() {
 
     private val vm: LoginViewModel by lazy { ViewModelFactory.getLoginViewModel() }
     private val gbc = GridBagConstraints().apply {
@@ -87,7 +90,8 @@ class LoginPanel(private val adminLoginSuccessListener: (() -> Unit)?) : JPanel(
             verticalAlignment = SwingConstants.CENTER
         }
         val loginButton = JButton("Вход")
-        val labelVersion = JLabel(APP_VERSION).apply {
+        val labelVersion = JLabel().apply {
+            text = constants.getString("app_version")
             font = Font(FONT_ARIAL, Font.BOLD, FINE_PRINT)
             horizontalAlignment = SwingConstants.CENTER
             foreground = Color.decode(COLOR_VERSION)
@@ -164,7 +168,7 @@ class LoginPanel(private val adminLoginSuccessListener: (() -> Unit)?) : JPanel(
     }
 
     companion object {
-        private const val APP_VERSION = "Версия: 1.0.1"
+//        private const val APP_VERSION = "Версия: 1.0.1"
         private const val COLOR_VERSION = "#4D4D4D"
 
         private const val AUTHORIZATION = "Авторизация"

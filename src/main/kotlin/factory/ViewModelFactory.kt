@@ -1,11 +1,19 @@
-package com.medvedev.app.presentation
+package com.medvedev.factory
 
 import com.medvedev.data.repository.AccountRepositoryImpl
 import com.medvedev.data.repository.AdminRepositoryImpl
 import com.medvedev.data.repository.AuthorizationRepositoryImpl
 import com.medvedev.data.storage.AdminStorageImpl
 import com.medvedev.data.storage.FileStorageImpl
-import com.medvedev.domain.usecase.*
+import com.medvedev.domain.usecase.AuthorizationUseCase
+import com.medvedev.domain.usecase.DisableAccountUseCase
+import com.medvedev.domain.usecase.EnableAccountUseCase
+import com.medvedev.domain.usecase.GetAdminUseCase
+import com.medvedev.domain.usecase.LoadAccountInfoUseCase
+import com.medvedev.domain.usecase.LoadListDisabledAccountUseCase
+import com.medvedev.domain.usecase.SaveAdminUseCase
+import com.medvedev.presentation.LoginViewModel
+import com.medvedev.presentation.ManagerViewModel
 
 object ViewModelFactory {
     fun getLoginViewModel(): LoginViewModel {
