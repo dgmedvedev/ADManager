@@ -8,6 +8,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import java.awt.*
 import java.awt.event.ActionListener
+import java.awt.event.FocusEvent
+import java.awt.event.FocusListener
 import javax.imageio.ImageIO
 import javax.swing.*
 
@@ -109,11 +111,10 @@ class ManagerPanel() : JPanel() {
             font = Font(FONT_ARIAL, Font.PLAIN, MEDIUM_FONT)
         }
 
-        val textField = JTextField(COLUMNS).apply {
-            text = hint
-//            foreground = Col
+        val textField = JTextField(hint, COLUMNS).apply {
+            font = Font(FONT_ARIAL, Font.PLAIN, SMALL_FONT)
+            foreground = Color.GRAY
             preferredSize = Dimension(0, TEXT_FIELD_HEIGHT)
-            font = Font(FONT_ARIAL, Font.PLAIN, MEDIUM_FONT)
             isVisible = false
         }
 
@@ -150,6 +151,24 @@ class ManagerPanel() : JPanel() {
             textField.isVisible = checkBox.isSelected
             executeButton.isVisible = checkBox.isSelected
         }
+
+        textField.addFocusListener(object : FocusListener {
+            override fun focusGained(e: FocusEvent?) {
+                if (textField.text == hint) {
+                    textField.font = Font(FONT_ARIAL, Font.PLAIN, MEDIUM_FONT)
+                    textField.foreground = Color.BLACK
+                    textField.text = ""
+                }
+            }
+
+            override fun focusLost(e: FocusEvent?) {
+                if (textField.text.isEmpty()) {
+                    textField.font = Font(FONT_ARIAL, Font.PLAIN, SMALL_FONT)
+                    textField.foreground = Color.GRAY
+                    textField.text = hint
+                }
+            }
+        })
 
         executeButton.addActionListener(createButtonListener(textField, count++))
     }
@@ -255,6 +274,7 @@ class ManagerPanel() : JPanel() {
         private const val FONT_ARIAL = "Arial"
         private const val LARGE_FONT = 20
         private const val MEDIUM_FONT = 14
+        private const val SMALL_FONT = 12
         private const val COLUMNS = 5
         private const val INSET_OF_BUTTON = 20
         private const val INSET_OF_CHECKBOX = 20

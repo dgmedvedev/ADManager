@@ -12,7 +12,7 @@ import javax.swing.JOptionPane
 class MainFrame(title: String) : JFrame(title) {
     private var loginPanel: LoginPanel? = null
     private var managerPanel: ManagerPanel? = null
-    private val currentLocale = Locale("ru")
+    private val currentLocale = Locale("ru", "RU")
     private val constants = ResourceBundle.getBundle("constants", currentLocale)
 
     init {

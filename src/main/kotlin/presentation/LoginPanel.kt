@@ -52,6 +52,9 @@ class LoginPanel(private val constants: ResourceBundle, private val adminLoginSu
         gbc.insets = Insets(0, 0, 0, 0) // Сбрасываем отступы
     }
 
+    private fun convertUTF8(text: String) =
+        String(text.toByteArray(charset("ISO-8859-1")), charset("UTF-8"))
+
     private fun resizeIcon(icon: ImageIcon): ImageIcon {
         val img = icon.getImage()
         val newImg = img.getScaledInstance(WIDTH_ICON, HEIGHT_ICON, Image.SCALE_SMOOTH)
@@ -91,7 +94,11 @@ class LoginPanel(private val constants: ResourceBundle, private val adminLoginSu
         }
         val loginButton = JButton("Вход")
         val labelVersion = JLabel().apply {
-            text = constants.getString("app_version")
+            val value = constants.getString("app_version")
+
+            println(value)
+
+            text = convertUTF8(value)
             font = Font(FONT_ARIAL, Font.BOLD, FINE_PRINT)
             horizontalAlignment = SwingConstants.CENTER
             foreground = Color.decode(COLOR_VERSION)
@@ -168,7 +175,7 @@ class LoginPanel(private val constants: ResourceBundle, private val adminLoginSu
     }
 
     companion object {
-//        private const val APP_VERSION = "Версия: 1.0.1"
+        //        private const val APP_VERSION = "Версия: 1.0.1"
         private const val COLOR_VERSION = "#4D4D4D"
 
         private const val AUTHORIZATION = "Авторизация"
