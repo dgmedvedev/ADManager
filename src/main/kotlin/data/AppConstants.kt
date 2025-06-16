@@ -1,6 +1,7 @@
 package com.medvedev.data
 
 object Constants {
+    const val ATTRIBUTE_LAST_LOGON: String = "lastLogon"
     const val ATTRIBUTE_ACCOUNT_NAME: String = "sAMAccountName"
     const val ATTRIBUTE_ACCOUNT_CONTROL: String = "userAccountControl"
 

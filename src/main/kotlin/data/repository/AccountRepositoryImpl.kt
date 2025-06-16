@@ -1,6 +1,7 @@
 package com.medvedev.data.repository
 
 import com.medvedev.data.Constants
+import com.medvedev.data.mapper.AccountMapper
 import com.medvedev.data.mapper.AccountMapper.toDomain
 import com.medvedev.data.network.Connection
 import com.medvedev.data.storage.FileStorage
@@ -16,6 +17,9 @@ import org.apache.directory.api.ldap.model.message.SearchRequest
 import org.apache.directory.api.ldap.model.message.SearchRequestImpl
 import org.apache.directory.api.ldap.model.message.SearchScope
 import org.apache.directory.api.ldap.model.name.Dn
+import java.text.SimpleDateFormat
+import java.util.*
+
 
 class AccountRepositoryImpl(private val fileStorage: FileStorage) : AccountRepository {
 
@@ -51,12 +55,51 @@ class AccountRepositoryImpl(private val fileStorage: FileStorage) : AccountRepos
         withContext(Dispatchers.IO) {
             val info = getAccountByName(username = username)
             if (info != null) {
-                println(info)
                 fileStorage.saveInfoToFile(username, info.toString())
             } else {
                 throw Exception("00000057")
             }
         }
+
+    override suspend fun loadListUnusedAccount(month: Int) {
+        checkConnection()
+        try {
+            val calendar = Calendar.getInstance()
+            calendar.add(Calendar.MONTH, -month)
+            val oneYearAgo: Date = calendar.getTime()
+
+            val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+            println("oneYearAgo: ${dateFormat.format(oneYearAgo)}")
+
+            val result: MutableList<String> = mutableListOf()
+            withContext(Dispatchers.Default) {
+                val searchRequest: SearchRequest = SearchRequestImpl()
+                    .setBase(Dn(Constants.BASE_DN))                        // Укажите базовый DN
+//                    .setFilter("(|" +
+//                            "(&(lastLogon<=${oneYearAgo.time})(!(lastLogon=${oneYearAgo.time})))" +
+//                            "(&(lastLogonTimestamp<=${oneYearAgo.time})(!(lastLogonTimestamp=${oneYearAgo.time})))" +
+//                            ")") // Укажите фильтр поиска
+                    .setFilter("(lastLogon<=${(oneYearAgo.time + AccountMapper.FROM_WINDOWS_TIME_TO_UNIX) * 10_000})") // Укажите фильтр поиска
+                    .setScope(SearchScope.SUBTREE)
+                val searchResult = connection.search(searchRequest)
+                while (searchResult.next()) {
+//                    val account = searchResult.entry.toDomain()
+//                    val username = account.name
+//                    val lastLogon = account.lastLogon
+//                    result.add("$username - $lastLogon")
+
+                    val entry = searchResult.entry
+                    val username = entry.get("sAMAccountName").string
+                    val lastLogon = AccountMapper.correctLastLogon(entry.get("lastLogon")?.string, entry)
+                    result.add("$username - $lastLogon")
+                }
+
+                fileStorage.saveListToFile(list = result.sorted())
+            }
+        } catch (e: Exception) {
+            println("Ошибка поиска 'мертвых душ': ${e.message}")
+        }
+    }
 
     override suspend fun loadListDisabledAccount() {
         checkConnection()

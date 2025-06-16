@@ -4,5 +4,6 @@ interface AccountRepository {
     suspend fun enableAccount(username: String): Boolean
     suspend fun disableAccount(username: String): Boolean
     suspend fun loadAccountInfo(username: String)
+    suspend fun loadListUnusedAccount(month: Int)
     suspend fun loadListDisabledAccount()
 }

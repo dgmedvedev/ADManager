@@ -7,13 +7,13 @@ import java.util.*
 
 object AccountMapper {
     private const val DATE_FORMAT = "dd.MM.yyyy"
-    private const val FROM_WINDOWS_TIME_TO_UNIX = 11644473600000L
+    const val FROM_WINDOWS_TIME_TO_UNIX = 11644473600000L
 
     fun Entry.toDomain(): Account = Account(
         name = this.get("sAMAccountName").string,
         dn = this.dn.toString(),
         userAccountControl = accountState(this.get("userAccountControl").string),
-        lastLogon = correctLastLogon(this.get("lastLogon").string, this),
+        lastLogon = correctLastLogon(this.get("lastLogon")?.string, this),
         badPasswordTime = convertWindowsTimeToDate(this.get("badPasswordTime").string),
         pwdLastSet = convertWindowsTimeToDate(this.get("pwdLastSet").string),
         logonCount = this.get("logonCount").string
@@ -25,13 +25,14 @@ object AccountMapper {
             else -> "активна"
         }
 
-    private fun correctLastLogon(value: String, entry: Entry): String =
+    fun correctLastLogon(value: String?, entry: Entry): String =
         convertWindowsTimeToDate(value).ifBlank {
-            convertWindowsTimeToDate(entry.get("lastLogonTimestamp").string)
+            val lastLogon = entry.get("lastLogonTimestamp")?.string
+            convertWindowsTimeToDate(lastLogon)
         }
 
-    fun convertWindowsTimeToDate(windowsFileTime: String): String {
-        val valueToLong = windowsFileTime.toLong()
+    fun convertWindowsTimeToDate(windowsFileTime: String?): String {
+        val valueToLong = windowsFileTime?.toLong() ?: 0L
         if (valueToLong == 0L) return ""
         val milliseconds = valueToLong / 10000 - FROM_WINDOWS_TIME_TO_UNIX
         val date = Date(milliseconds)

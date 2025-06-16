@@ -78,7 +78,8 @@ class ManagerPanel() : JPanel() {
         addTaskPanelWithTextField(TASK_1, HINT_ENTER_USERNAME)
         addTaskPanelWithTextField(TASK_2, HINT_ENTER_USERNAME)
         addTaskPanelWithTextField(TASK_3, HINT_ENTER_USERNAME)
-        addTaskPanel(TASK_4)
+        addTaskPanelWithTextField(TASK_4, HINT_ENTER_PERIOD)
+        addTaskPanel(TASK_5)
 
         gbc.gridy++
         gbc.weighty = 1.0
@@ -219,14 +220,15 @@ class ManagerPanel() : JPanel() {
         executeButton.addActionListener(createButtonListener(buttonNumber = count++))
     }
 
-    private fun createButtonListener(usernameField: JTextField = JTextField(), buttonNumber: Int): ActionListener =
+    private fun createButtonListener(textField: JTextField = JTextField(), buttonNumber: Int): ActionListener =
         ActionListener { event ->
             try {
                 when (buttonNumber) {
-                    0 -> vm.enableButtonIsPressed(username = usernameField.text)
-                    1 -> vm.disableButtonIsPressed(username = usernameField.text)
-                    2 -> vm.loadAccountInfoButtonIsPressed(username = usernameField.text)
-                    3 -> vm.loadListDisabledAccountButtonIsPressed()
+                    0 -> vm.enableButtonIsPressed(username = textField.text)
+                    1 -> vm.disableButtonIsPressed(username = textField.text)
+                    2 -> vm.loadAccountInfoButtonIsPressed(username = textField.text)
+                    3 -> vm.loadListUnusedAccountButtonIsPressed(month = textField.text)
+                    4 -> vm.loadListDisabledAccountButtonIsPressed()
                 }
             } catch (e: Exception) {
                 showErrorMessage("Ошибка установки событий кнопки!")
@@ -283,10 +285,12 @@ class ManagerPanel() : JPanel() {
         private const val MESSAGE_TITLE_ERROR = "Ошибка!"
 
         private const val HINT_ENTER_USERNAME = "Введите имя пользователя"
+        private const val HINT_ENTER_PERIOD = "Введите период (месяцев)"
 
         private const val TASK_1 = "1. Разблокировать учетную запись"
         private const val TASK_2 = "2. Отключить учетную запись"
         private const val TASK_3 = "3. Информация об учетной записи"
-        private const val TASK_4 = "4. Список отключенных учетных записей"
+        private const val TASK_4 = "4. Информация о 'мертвых душах'"
+        private const val TASK_5 = "5. Список отключенных учетных записей"
     }
 }

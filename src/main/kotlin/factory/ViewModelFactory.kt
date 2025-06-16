@@ -11,6 +11,7 @@ import com.medvedev.domain.usecase.EnableAccountUseCase
 import com.medvedev.domain.usecase.GetAdminUseCase
 import com.medvedev.domain.usecase.LoadAccountInfoUseCase
 import com.medvedev.domain.usecase.LoadListDisabledAccountUseCase
+import com.medvedev.domain.usecase.LoadListUnusedAccountUseCase
 import com.medvedev.domain.usecase.SaveAdminUseCase
 import com.medvedev.presentation.LoginViewModel
 import com.medvedev.presentation.ManagerViewModel
@@ -36,6 +37,7 @@ object ViewModelFactory {
             enableAccountUseCase = EnableAccountUseCase(repository = accountRepository),
             disableAccountUseCase = DisableAccountUseCase(repository = accountRepository),
             loadAccountInfoUseCase = LoadAccountInfoUseCase(repository = accountRepository),
+            loadListUnusedAccountUseCase = LoadListUnusedAccountUseCase(repository = accountRepository),
             loadListDisabledAccountUseCase = LoadListDisabledAccountUseCase(repository = accountRepository)
         )
     }

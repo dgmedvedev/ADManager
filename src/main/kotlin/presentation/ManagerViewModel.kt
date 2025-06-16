@@ -12,6 +12,7 @@ class ManagerViewModel(
     private val enableAccountUseCase: EnableAccountUseCase,
     private val disableAccountUseCase: DisableAccountUseCase,
     private val loadAccountInfoUseCase: LoadAccountInfoUseCase,
+    private val loadListUnusedAccountUseCase: LoadListUnusedAccountUseCase,
     private val loadListDisabledAccountUseCase: LoadListDisabledAccountUseCase
 ) {
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
@@ -61,6 +62,18 @@ class ManagerViewModel(
         }
     }
 
+    fun loadListUnusedAccountButtonIsPressed(month: String) {
+        coroutineScope.launch {
+            try {
+                    loadListUnusedAccountUseCase(month = month.toInt())
+                    _state.emit(ManagerState.ListLoaded)
+            } catch (e: Exception) {
+                val message = handleError(exception = e)
+                _state.emit(ManagerState.Error(message = message))
+            }
+        }
+    }
+
     fun loadListDisabledAccountButtonIsPressed() {
         coroutineScope.launch {
             try {
@@ -81,7 +94,7 @@ class ManagerViewModel(
         val exceptionNumber =
             exception.message?.let { message -> if (message.length >= 8) message.substring(0, 8) else "unknown" }
         return when (exceptionNumber) {
-            "00000057" -> "Пользователь \"${username.trim()}\" не найден!"
+            "00000057" -> "Пользователь не найден!"
             "000004DC" -> "В целях безопасности, время сессии истекло!\nПройдите повторную аутентификацию!"
             "00002098" -> "У авторизованного пользователя\nнедостаточно прав доступа!"
             "80090308" -> "Неверный логин/пароль!"
