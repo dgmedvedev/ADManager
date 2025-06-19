@@ -20,7 +20,6 @@ import org.apache.directory.api.ldap.model.name.Dn
 import java.text.SimpleDateFormat
 import java.util.*
 
-
 class AccountRepositoryImpl(private val fileStorage: FileStorage) : AccountRepository {
 
     val connection = Connection.getInstance()
@@ -57,44 +56,39 @@ class AccountRepositoryImpl(private val fileStorage: FileStorage) : AccountRepos
             if (info != null) {
                 fileStorage.saveInfoToFile(username, info.toString())
             } else {
-                throw Exception("00000057")
+                throw Exception(USER_NOT_FOUND)
             }
         }
 
     override suspend fun loadListUnusedAccount(month: Int) {
         checkConnection()
         try {
-            val calendar = Calendar.getInstance()
-            calendar.add(Calendar.MONTH, -month)
-            val oneYearAgo: Date = calendar.getTime()
-
-            val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-            println("oneYearAgo: ${dateFormat.format(oneYearAgo)}")
-
+            val calendar: Calendar = Calendar.getInstance().apply { add(Calendar.MONTH, -month) }
+            val someTimeAgo: Date = calendar.getTime()
+            val dateFormat = SimpleDateFormat(AccountMapper.DATE_FORMAT, Locale.getDefault())
+            val date: String = dateFormat.format(someTimeAgo)
             val result: MutableList<String> = mutableListOf()
+
             withContext(Dispatchers.Default) {
                 val searchRequest: SearchRequest = SearchRequestImpl()
-                    .setBase(Dn(Constants.BASE_DN))                        // Укажите базовый DN
-//                    .setFilter("(|" +
-//                            "(&(lastLogon<=${oneYearAgo.time})(!(lastLogon=${oneYearAgo.time})))" +
-//                            "(&(lastLogonTimestamp<=${oneYearAgo.time})(!(lastLogonTimestamp=${oneYearAgo.time})))" +
-//                            ")") // Укажите фильтр поиска
-                    .setFilter("(lastLogon<=${(oneYearAgo.time + AccountMapper.FROM_WINDOWS_TIME_TO_UNIX) * 10_000})") // Укажите фильтр поиска
+                    .setBase(Dn(Constants.BASE_DN))
+                    .setFilter(
+                        "(&" +
+                                "(lastLogon<=${AccountMapper.convertDateToWindowsTime(someTimeAgo)})" +
+                                "(lastLogonTimestamp<=${AccountMapper.convertDateToWindowsTime(someTimeAgo)})" +
+                                ")"
+                    )
                     .setScope(SearchScope.SUBTREE)
                 val searchResult = connection.search(searchRequest)
                 while (searchResult.next()) {
-//                    val account = searchResult.entry.toDomain()
-//                    val username = account.name
-//                    val lastLogon = account.lastLogon
-//                    result.add("$username - $lastLogon")
-
                     val entry = searchResult.entry
                     val username = entry.get("sAMAccountName").string
                     val lastLogon = AccountMapper.correctLastLogon(entry.get("lastLogon")?.string, entry)
                     result.add("$username - $lastLogon")
                 }
-
-                fileStorage.saveListToFile(list = result.sorted())
+                result.sorted()
+                result.add(0, "Список неактивных учетных записей с $date:\n")
+                fileStorage.saveListToFile(list = result, UNUSED_ACCOUNTS_FILE_PATH)
             }
         } catch (e: Exception) {
             println("Ошибка поиска 'мертвых душ': ${e.message}")
@@ -107,8 +101,8 @@ class AccountRepositoryImpl(private val fileStorage: FileStorage) : AccountRepos
             val result: MutableList<String> = mutableListOf()
             withContext(Dispatchers.Default) {
                 val searchRequest: SearchRequest = SearchRequestImpl()
-                    .setBase(Dn(Constants.BASE_DN))                        // Укажите базовый DN
-                    .setFilter("(|(userAccountControl=514)(userAccountControl=66050))") // Укажите фильтр поиска
+                    .setBase(Dn(Constants.BASE_DN))                             // Укажите базовый DN
+                    .setFilter("(|(userAccountControl=514)(userAccountControl=66050))")   // Укажите фильтр поиска
                     .setScope(SearchScope.SUBTREE)
                 val searchResult = connection.search(searchRequest)
                 while (searchResult.next()) {
@@ -116,7 +110,9 @@ class AccountRepositoryImpl(private val fileStorage: FileStorage) : AccountRepos
                     val username = entry.get(Constants.ATTRIBUTE_ACCOUNT_NAME).string
                     result.add(username)
                 }
-                fileStorage.saveListToFile(list = result.sorted())
+                result.sorted()
+                result.add(0, "Список отключенных учетных записей:\n")
+                fileStorage.saveListToFile(list = result, filePath = DISABLED_ACCOUNTS_FILE_PATH)
             }
         } catch (e: Exception) {
             println("Ошибка поиска отключенных учетных записей: ${e.message}")
@@ -126,17 +122,16 @@ class AccountRepositoryImpl(private val fileStorage: FileStorage) : AccountRepos
     private suspend fun getAccountByName(username: String): Account? {
         checkConnection()
         var result: Account? = null
-        // Имя пользователя, по которому будем искать его DN
         val sAMAccountName = username
 
         try {
             return withContext(Dispatchers.Default) {
                 // Создание запроса на поиск
                 val searchRequest: SearchRequest = SearchRequestImpl()
-                    .setBase(Dn(Constants.BASE_DN)) // Укажите базовый DN
-                    .setFilter("(${Constants.ATTRIBUTE_ACCOUNT_NAME}=$sAMAccountName)") // Укажите фильтр поиска
+                    .setBase(Dn(Constants.BASE_DN))                             // Укажите базовый DN
+                    .setFilter("(${Constants.ATTRIBUTE_ACCOUNT_NAME}=$sAMAccountName)")   // Укажите фильтр поиска
                     .setScope(SearchScope.SUBTREE)
-//            .addAttributes("cn", "sn", "mail") // Укажите атрибуты, которые хотите получить
+//            .addAttributes("cn", "sn", "mail")    // Укажите атрибуты, которые хотите получить
 
                 val searchResult = connection.search(searchRequest)
                 if (searchResult.next()) {
@@ -151,6 +146,13 @@ class AccountRepositoryImpl(private val fileStorage: FileStorage) : AccountRepos
     }
 
     private fun checkConnection() {
-        if (!connection.isAuthenticated) throw Exception("000004DC")
+        if (!connection.isAuthenticated) throw Exception(SESSION_TIME_EXPIRED)
+    }
+
+    companion object {
+        private const val DISABLED_ACCOUNTS_FILE_PATH = "Files/DisabledAccounts.txt"
+        private const val UNUSED_ACCOUNTS_FILE_PATH = "Files/UnusedAccounts.txt"
+        private const val USER_NOT_FOUND = "00000057"
+        private const val SESSION_TIME_EXPIRED = "000004DC"
     }
 }

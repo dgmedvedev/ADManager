@@ -21,9 +21,9 @@ class FileStorageImpl : FileStorage {
         }
     }
 
-    override fun saveListToFile(list: List<String>) {
+    override fun saveListToFile(list: List<String>, filePath: String) {
         try {
-            val file = File(DISABLED_ACCOUNTS_FILE_PATH)
+            val file = File(filePath)
             file.parentFile.mkdirs()
             file.printWriter().use { out ->
                 list.forEach { username ->
@@ -39,7 +39,6 @@ class FileStorageImpl : FileStorage {
 
     companion object {
         private const val ACCOUNT_INFO_FILE_PATH = "Files/AccountInfo(%s).txt"
-        private const val DISABLED_ACCOUNTS_FILE_PATH = "Files/DisabledAccounts.txt"
         private const val NOTEPAD_LAUNCHER = "notepad.exe"
     }
 }

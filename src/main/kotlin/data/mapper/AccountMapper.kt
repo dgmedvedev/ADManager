@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object AccountMapper {
-    private const val DATE_FORMAT = "dd.MM.yyyy"
+    const val DATE_FORMAT = "dd.MM.yyyy"
     const val FROM_WINDOWS_TIME_TO_UNIX = 11644473600000L
 
     fun Entry.toDomain(): Account = Account(
@@ -39,4 +39,6 @@ object AccountMapper {
         val dateFormat = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
         return dateFormat.format(date)
     }
+
+    fun convertDateToWindowsTime(date: Date): Long = (date.time + FROM_WINDOWS_TIME_TO_UNIX) * 10_000
 }
