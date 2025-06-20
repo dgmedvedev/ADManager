@@ -5,7 +5,7 @@ plugins {
 
 val jarName = "ADM"
 group = "com.medvedev"
-version = "1.0.1"
+version = "1.0.3"
 
 repositories {
     google()
@@ -22,7 +22,7 @@ dependencies {
 tasks.jar {
     manifest {
         attributes(
-            "Main-Class" to "com.medvedev.app.presentation.MainKt"
+            "Main-Class" to "com.medvedev.presentation.MainKt"
         )
     }
 }

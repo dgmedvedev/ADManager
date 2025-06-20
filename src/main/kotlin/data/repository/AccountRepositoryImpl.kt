@@ -67,7 +67,7 @@ class AccountRepositoryImpl(private val fileStorage: FileStorage) : AccountRepos
             val someTimeAgo: Date = calendar.getTime()
             val dateFormat = SimpleDateFormat(AccountMapper.DATE_FORMAT, Locale.getDefault())
             val date: String = dateFormat.format(someTimeAgo)
-            val result: MutableList<String> = mutableListOf()
+            var result: MutableList<String> = mutableListOf()
 
             withContext(Dispatchers.Default) {
                 val searchRequest: SearchRequest = SearchRequestImpl()
@@ -86,7 +86,7 @@ class AccountRepositoryImpl(private val fileStorage: FileStorage) : AccountRepos
                     val lastLogon = AccountMapper.correctLastLogon(entry.get("lastLogon")?.string, entry)
                     result.add("$username - $lastLogon")
                 }
-                result.sorted()
+                result = result.sorted().toMutableList()
                 result.add(0, "Список неактивных учетных записей с $date:\n")
                 fileStorage.saveListToFile(list = result, UNUSED_ACCOUNTS_FILE_PATH)
             }
@@ -98,7 +98,7 @@ class AccountRepositoryImpl(private val fileStorage: FileStorage) : AccountRepos
     override suspend fun loadListDisabledAccount() {
         checkConnection()
         try {
-            val result: MutableList<String> = mutableListOf()
+            var result: MutableList<String> = mutableListOf()
             withContext(Dispatchers.Default) {
                 val searchRequest: SearchRequest = SearchRequestImpl()
                     .setBase(Dn(Constants.BASE_DN))                             // Укажите базовый DN
@@ -110,7 +110,7 @@ class AccountRepositoryImpl(private val fileStorage: FileStorage) : AccountRepos
                     val username = entry.get(Constants.ATTRIBUTE_ACCOUNT_NAME).string
                     result.add(username)
                 }
-                result.sorted()
+                result = result.sorted().toMutableList()
                 result.add(0, "Список отключенных учетных записей:\n")
                 fileStorage.saveListToFile(list = result, filePath = DISABLED_ACCOUNTS_FILE_PATH)
             }
